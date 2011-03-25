@@ -100,7 +100,6 @@ int main(int argc, char  **argv)
 	for(i=0; i<num_files; i++) {
 		memcpy(file_names+(i*(FILE_NAME_LEN+1)), randomStr(FILE_NAME_LEN), FILE_NAME_LEN+1);
 		(file_names+i*(FILE_NAME_LEN+1))[FILE_NAME_LEN-1] = '7';
-		//printf("%s\n", file_names+(i*(FILE_NAME_LEN+1)));
 	}
 	
 	char *attrval = NULL;
@@ -114,7 +113,7 @@ int main(int argc, char  **argv)
 	
 	long start = getus();
 
-	int report_every = num_files/50>0?num_files/50:1;
+	int report_every = num_files/1000>0?num_files/1000:1;
 	
 	for(i=0; i<num_files; i++) {
 		char *fname=file_names+(i*(FILE_NAME_LEN+1));
@@ -140,8 +139,9 @@ int main(int argc, char  **argv)
 				}
 			}
 		}
+		
 		if(i%report_every==0)
-			printPercents((float)i/num_files*100.);
+			printPercents((float)i/(float)num_files*100.);
 		
 	}
 	
@@ -151,12 +151,12 @@ int main(int argc, char  **argv)
 
 	printf("Created %d files in %ld us. %f files/s\n", num_files, duration, (float)num_files/((float)duration/1000000.));
 	
-	
-	for(i=0; i<num_files; i++) {
+	//for(i=0; i<num_files; i++) {
 		//unlink(file_names+(i*(FILE_NAME_LEN+1)));
-	}
+	//}
 	
-	free(file_names);
+	if(file_names) free(file_names);
+	if(attrval)    free(attrval);
 	
 	
 	return 0;
