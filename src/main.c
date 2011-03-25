@@ -10,12 +10,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-const int FILE_NAME_LEN = 16;
+#include "util.h"
 
-void printPercents(float n)
-{
-	printf("\b\b\b\b\b\b\b\b               \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%.2f %%", n);
-}
+const int FILE_NAME_LEN = 16;
 
 inline long getus()
 {
@@ -94,7 +91,7 @@ int main(int argc, char  **argv)
 		return -3;
 	}
 	
-	printf("Using dir %s. Creating %d files. Writing %d bytes of extended attributes per file.\n", dir, num_files,attr_size);
+	printf("Using dir %s. Creating %d files. Writing %d bytes of extended attributes per file.\n\n", dir, num_files,attr_size);
 	
 	char *file_names = (char*) calloc((FILE_NAME_LEN+1)*sizeof(char), num_files);
 	for(i=0; i<num_files; i++) {
@@ -109,19 +106,21 @@ int main(int argc, char  **argv)
 			attrval[i]=randomChar();
 	}
 	
-	printf("Creating files: ");
+	progress_bar_t pbar;
+	init_progress_bar(&pbar, "Creating files");
+	update_progress_bar(&pbar, .0);
 	
 	long start = getus();
 
 	int report_every = num_files/1000>0?num_files/1000:1;
-	
+
 	for(i=0; i<num_files; i++) {
 		char *fname=file_names+(i*(FILE_NAME_LEN+1));
-		
+
 		if(mknod(fname, S_IFREG|0666, 0) ==0 ) {
 			if(attr_size>0) {
 
-				if(lsetxattr(fname, "user.mdtest.test", attrval, attr_size, 0) != 0) {
+				if(setxattr(fname, "user.mdtest.test", attrval, attr_size, 0) != 0) {
 				
 					if(ENOTSUP == errno)
 						printf("Extended attributes not supported.\n");
@@ -141,13 +140,14 @@ int main(int argc, char  **argv)
 		}
 		
 		if(i%report_every==0)
-			printPercents((float)i/(float)num_files*100.);
+			update_progress_bar(&pbar, (float)i/(float)num_files*100.);
 		
 	}
 	
 	long duration = getusinterval(start);
 	
-	printPercents(100.); printf("\n\n");
+
+	update_progress_bar(&pbar, 100.); printf("\n\n");
 
 	printf("Created %d files in %ld us. %f files/s\n", num_files, duration, (float)num_files/((float)duration/1000000.));
 	

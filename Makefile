@@ -6,7 +6,7 @@ RM=rm -rf
 EXECUTABLE=attrbench
 
 
-SOURCES=src/main.c
+SOURCES=src/main.c src/util.c
 OBJECTS=$(SOURCES:.cpp=.o)
 
 
